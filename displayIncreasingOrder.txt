@@ -1,0 +1,149 @@
+//This algorithm works with a variation of merge sort.
+//By James Partsafas (40170301) and Christina Darstbanian (40097340)
+
+Algorithm displayIncreasingOrder(pName, pDOB, numSenior, n)
+Input: String array pName with corresponding string array pDOB, with n 
+representing size of both arrays and numSenior is the number who are seniors (defined as 65 years old or more)
+Output: Display everyone ordered chronologically by date of birth
+
+//Get date (use current date)
+int currentDate <- 20210521 //formatted yyyymmdd
+int seniorAge <- 650000 //represents 65 years old in dating system used here.
+
+int length <- pName.length
+
+//Special cases
+if (length != pDOB.length OR length = 0) then
+	return
+if (length = 1) then //Only one person in array
+	return
+
+//General case now
+int mid <- length/2
+string[mid] leftName
+string[mid] leftDate
+string[length-mid] rightName
+string[length-mid] rightDate
+
+for (i <- 0 to mid - 1) do
+	leftName[i] <- pName[i]
+	leftDate[i] <- pDOB[i]
+	increment i
+for (i <- mid to length - 1) do
+	rightName[i-mid] <- pName[i]
+	rightDate[i-mid] <- pDOB[i]
+	increment i
+
+//Create tree-like structure recursively
+displayIncreasingOrder(leftName, leftDate, numSenior, n)
+displayIncreasingOrder(rightName, rightDate, numSenior, n)
+
+//call mergeParticipantsForDisplay on every part of tree
+mergeParticipantsForDisplay(pName, pDOB, leftName, leftDate, rightName, rightDate, mid, length-mid)
+
+//Display everyone if recursion is finished
+
+if (length = n) then
+	for (i <- 0 to n - 1) do
+		display (pName[i] + "\t" + pDOB[i])
+		increment i
+
+return
+
+
+************************************************************************************
+
+
+Algorithm mergeParticipantsForDisplay(pName, pDOB, leftName, leftDate, rightName, rightDate, left, right)
+Input: string arrays pName, pDOB, leftName, leftDate, rightName, rightDate and integers left, right
+Output: Reorders the arrays such that everything is in chronological order
+
+//i traverses left lists, j the right ones, and k the final sorted one
+int i <- 0
+int j <- 0
+int k <- 0
+
+//Move through left and right lists and reorder original in the process
+int leftAge
+int rightAge
+
+while(i < left AND j < right) do
+	leftAge <- getAge(leftDate[i])
+	rightAge <- getAge(rightDate[j])
+	
+	if (leftAge <= rightAge) then
+		pName[k] <- leftName[i]
+		pDOB[k] <- leftDate[i]
+		increment i
+		increment k
+	else
+		pName[k] <- rightName[j]
+		pDOB[k] <- rightDate[j]
+		increment k
+		increment j
+
+//While loop is done. Make sure both left and right lists are exhausted before returning
+while (i < left) do
+	pName[k] <- leftName[i]
+	pDOB[k] <- leftDate[i]
+	increment i
+	increment k
+while (j < right) do
+	pName[k] <- rightName[j]
+	pDOB[k] <- rightDate[j]
+	increment k
+	increment j
+
+return
+
+
+************************************************************************************
+
+
+Algorithm getAge(dob)
+Input: String dob representing date of birth, formatted as day-month-year (strings are understood as an array of chars)
+Output: An integer representing age. 
+
+String[3] stringDate
+int word <- 0
+int letter <- 0
+//Get day, month, and year in array of strings
+for (i <- 0 to dob.length - 1) do
+	if (dob[i] = '-') then
+		increment word
+		letter <- 0
+	else
+		stringDate[word][letter] <- dob[i]
+	increment i
+
+//Verify that day and month are not single digit and add 0 at start if that's the case
+if (stringDate[0].length = 1) then
+	stringDate[0] <- '0' + stringDate[0]
+if (stringDate[1].length = 1) then
+	stringDate[1] <- '0' + stringDate[1]
+
+string fullDate <- stringDate[2] + stringDate[1] + stringDate[0]
+
+//Convert this string to an integer
+int date <- 0
+int temp
+int power <- 1
+for (i <- fullDate.length - 1 to 0) do
+	temp <- (int) fullDate[i]
+	for (j <- 0 to power - 1) do
+		temp = temp * 10
+		increment j
+	date = date + temp
+	increment power
+	decrement i
+
+int currentDate <- 20210521 //formatted yyyymmdd
+
+date <- currentDate - date
+
+return date
+
+
+
+
+

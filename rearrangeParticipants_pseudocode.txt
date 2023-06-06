@@ -1,0 +1,182 @@
+//This algorithm works with a variation of merge sort.
+//By James Partsafas (40170301) and Christina Darstbanian (40097340)
+
+Algorithm rearrangeParticipants(pName, pDOB, n)
+Input: String array pName with corresponding string array pDOB, both of length n
+Output: return number of seniors (those 65 years old or more) while reordering array such
+that seniors are listed chronologically at start and non-seniors are listed reverse-
+chronologically immediately after them
+
+//Get date (use current date)
+int currentDate <- 20210521 //formatted yyyymmdd
+int seniorAge <- 650000 //represents 65 years old in dating system used here.
+
+//Special cases
+if (pName.length != pDOB.length OR length = 0) then
+	return -1
+if (n = 1) then //Only one person in array
+	int age <- getAge(pDOB[0])
+	if (age >= seniorAge) then
+		return 1
+	else
+		return 0
+
+//General case now
+int mid <- n/2
+string[mid] leftName
+string[mid] leftDate
+string[n-mid] rightName
+string[n-mid] rightDate
+
+for i <- 0 to mid - 1 do
+	leftName[i] <- pName[i]
+	leftDate[i] <- pDOB[i]
+	increment i
+for i <- mid to n - 1 do
+	rightName[i-mid] <- pName[i]
+	rightDate[i-mid] <- pDOB[i]
+	increment i
+
+//Create tree-like structure recursively
+rearrangeParticipants(leftName, leftDate, mid)
+rearrangeParticipants(rightName, rightDate, n-mid)
+
+//call mergeParticipants on every part of tree
+int seniorCount <- mergeParticipants(pName, pDOB, leftName, leftDate, rightName, rightDate, mid, n-mid)
+
+return seniorCount
+
+
+************************************************************************************
+
+
+Algorithm mergeParticipants(pName, pDOB, leftName, leftDate, rightName, rightDate, left, right)
+Input: string arrays pName, pDOB, leftName, leftDate, rightName, rightDate and integers left, right
+Output: The number of seniors (people over 65 years of age) while also reordering the array in the manner specified
+by rearrangeParticipants above.
+
+//i traverses left lists, j the right ones, and k the final sorted one
+int i <- 0
+int j <- 0
+int k <- 0
+
+int seniorCount <- 0
+int seniorAge <- 650000
+
+//Move through left and right lists and reorder original in the process
+int leftAge
+int rightAge
+boolean leftIsSenior
+boolean rightIsSenior
+
+while(i < left AND j < right)
+	leftAge <- getAge(leftDate[i])
+	rightAge <- getAge(rightDate[j])
+	leftIsSenior <- false
+	rightIsSenior <- false
+	
+	if (leftAge >= seniorAge) then
+		leftIsSenior <- true
+	if (rightAge >= seniorAge) then
+		rightIsSenior <- true
+	
+	if (leftIsSenior AND NOT rightIsSenior) then //left is senior, right isn't
+		pName[k] <- leftName[i]
+		pDOB[k] <- leftDate[j]
+		increment i
+		increment k
+		increment seniorCount
+	else if (rightIsSenior AND NOT leftIsSenior) then //right is senior, left isn't
+		pName[k] <- rightName[j]
+		pDOB[k] <- rightDate[j]
+		increment k
+		increment j
+		increment seniorCount
+	else if (rightIsSenior AND leftIsSenior) then //both are seniors
+		increment seniorCount
+		if (leftAge >= rightAge) then
+			pName[k] <- leftName[i]
+			pDOB[k] <- leftDate[i]
+			increment i
+			increment k
+		else
+			pName[k] <- rightName[j]
+			pDOB[k] <- rightDate[j]
+			increment k
+			increment j
+	else //both are juniors
+		if (leftAge <= rightAge) then
+			pName[k] <- leftName[i]
+			pDOB[k] <- leftDate[i]
+			increment i
+			increment k
+		else
+			pName[k] <- rightName[j]
+			pDOB[k] <- rightDate[j]
+			increment k
+			increment j
+
+//While loop is done. Make sure both left and right lists are exhausted before returning
+while (i < left) do
+	if (getAge(leftDate[i]) >= seniorAge) then
+		increment seniorCount
+	pName[k] <- leftName[i]
+	pDOB[k] <- leftDate[i]
+	increment i
+	increment k
+while (j < right) do
+	if (getAge(rightDate[i]) >= seniorAge) then
+		increment seniorCount
+	pName[k] <- rightName[j]
+	pDOB[k] <- rightDate[j]
+	increment k
+	increment j
+
+return seniorCount
+
+
+************************************************************************************
+
+
+Algorithm getAge(dob)
+Input: String dob representing date of birth, formatted as day-month-year (strings are understood as an array of chars)
+Output: An integer representing age. 
+
+String[3] stringDate
+int word <- 0
+int letter <- 0
+//Get day, month, and year in array of strings
+for (i <- 0 to dob.length - 1) do
+	if (dob[i] = '-') then
+		increment word
+		letter <- 0
+	else
+		stringDate[word][letter] <- dob[i]
+	increment i
+
+//Verify that day and month are not single digit and add 0 at start if that's the case
+if (stringDate[0].length = 1) then
+	stringDate[0] <- '0' + stringDate[0]
+if (stringDate[1].length = 1) then
+	stringDate[1] <- '0' + stringDate[1]
+
+string fullDate <- stringDate[2] + stringDate[1] + stringDate[0]
+
+//Convert this string to an integer
+int date <- 0
+int temp
+int power <- 1
+for (i <- fullDate.length - 1 to 0) do
+	temp <- (int) fullDate[i]
+	for (j <- 0 to power - 1) do
+		temp = temp * 10
+		increment j
+	date = date + temp
+	increment power
+	decrement i
+
+int currentDate <- 20210521 //formatted yyyymmdd
+
+date <- currentDate - date
+
+return date
